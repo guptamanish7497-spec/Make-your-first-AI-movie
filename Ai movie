@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Movie Forge — Make Your First AI Movie</title>
+<style>
+:root{
+  --bg:#000000;--surface:#0B0B0D;
+  --accent1:#FF7A1E;--accent2:#FFB020;
+  --ok:#34D399;
+  --glass:rgba(255,255,255,.055);--glassb:rgba(255,255,255,.10);
+  --ink:#F5F5F7;--ink-dim:#98989F;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;scroll-behavior:smooth}
+*{box-sizing:inherit}
+body{margin:0;min-height:100%;color:var(--ink);background:var(--bg);line-height:1.6;font-weight:500;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:800;letter-spacing:-.02em;margin:0 0 10px}
+p{margin:0 0 12px;color:var(--ink-dim);font-size:15px}
+.wrap{max-width:720px;margin:0 auto;padding:20px 18px 90px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(0,0,0,.72);backdrop-filter:blur(20px)}
+.progress-track{height:2px;background:rgba(255,255,255,.08)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent1),var(--accent2));width:0%;transition:width .3s cubic-bezier(.22,1,.36,1)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;max-width:720px;margin:0 auto}
+.brand{font-size:15px;font-weight:800}
+.brand span{color:var(--accent2)}
+.stat{font-size:12px;color:var(--ink-dim);font-weight:600}
+.card{background:var(--glass);border:1px solid var(--glassb);border-radius:22px;padding:20px;margin-bottom:14px;backdrop-filter:blur(24px)}
+.reveal{opacity:0;transform:translateY(18px) scale(.985);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:translateY(0) scale(1)}
+.hero{padding:44px 0 8px}
+.hero h1{font-size:clamp(28px,7vw,40px);margin:14px 0 10px}
+.hero p{font-size:16px;max-width:520px}
+.btn{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;padding:15px 20px;border-radius:16px;width:100%;transition:transform .18s cubic-bezier(.22,1,.36,1);-webkit-tap-highlight-color:transparent;text-align:center}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#1a0e00}
+.btn-ghost{background:var(--glass);color:var(--ink);border:1px solid var(--glassb)}
+.btn-row{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.stage-nav{display:flex;gap:8px;overflow-x:auto;padding:16px 0 4px;scrollbar-width:none}
+.stage-nav::-webkit-scrollbar{display:none}
+.stage-chip{flex:none;font-size:13px;font-weight:700;padding:9px 15px;border-radius:14px;border:1px solid var(--glassb);background:var(--glass);color:var(--ink-dim);cursor:pointer}
+.stage-chip.active{color:#1a0e00;background:linear-gradient(90deg,var(--accent1),var(--accent2));border-color:transparent}
+.step-row{display:flex;align-items:center;gap:12px;padding:15px 6px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06)}
+.step-row:last-child{border-bottom:none}
+.step-num{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.07);flex:none;color:var(--ink-dim)}
+.step-num.done{background:var(--ok);color:#04231a}
+.step-num.now{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#1a0e00}
+.step-title{font-size:15px;font-weight:600;color:var(--ink)}
+.step-sub{font-size:12px;color:var(--ink-dim);margin-top:1px}
+.chev{margin-left:auto;color:var(--ink-dim);font-size:14px}
+.detail{display:none}
+.detail.open{display:block}
+.label{display:block;font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:6px}
+.box{background:rgba(255,255,255,.04);border:1px solid var(--glassb);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.box p{margin:0;color:var(--ink);font-size:15px}
+.example-box{border-color:rgba(255,176,32,.22);background:rgba(255,176,32,.06)}
+.example-box .label{color:var(--accent2)}
+.word-box{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.word-box .label{color:var(--ok)}
+.prompt-box{background:#050505;border:1px solid var(--glassb);border-radius:14px;padding:12px 14px;font-size:13px;color:#E4E4E8;white-space:pre-wrap}
+.now-box{background:rgba(255,122,30,.08);border:1px solid rgba(255,122,30,.25);border-radius:20px;padding:18px;margin-top:8px}
+.now-box .label{color:var(--accent1);font-size:13px}
+.now-list{margin:0;padding-left:20px;color:var(--ink)}
+.now-list li{margin-bottom:6px;font-size:15px}
+section{scroll-margin-top:70px}
+.pillhead{display:inline-block;font-size:12px;font-weight:700;color:var(--ink-dim);background:rgba(255,255,255,.06);border-radius:10px;padding:5px 11px;margin-bottom:10px}
+@media (prefers-reduced-motion: reduce){.reveal{transition:none;opacity:1;transform:none}.btn:active{transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="progress-track"><div class="progress-fill" id="pfill"></div></div>
+  <div class="topbar-inner">
+    <div class="brand">MOVIE <span>FORGE</span></div>
+    <div class="stat" id="statline">You have not started yet</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero reveal" id="heroSec">
+    <h1>Let's make your first movie together.</h1>
+    <p>You do not need to know anything about filmmaking, computers, or YouTube. We will explain everything, one small step at a time, and tell you exactly what to click, what to type, and what you'll end up with.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(0)">Start — Choose My Movie Idea</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('roadmapSec').scrollIntoView({behavior:'smooth'})">See All 25 Steps</button>
+    </div>
+  </section>
+
+  <section id="roadmapSec">
+    <div class="stage-nav" id="stageNav"></div>
+    <div class="card" id="stepListCard" style="padding:4px 14px"></div>
+  </section>
+
+  <section id="detailSec" class="detail card"></section>
+
+  <section class="card reveal" id="monzSec">
+    <span class="pillhead">AFTER YOUR MOVIE IS PUBLISHED</span>
+    <h2>Turning your channel into income</h2>
+    <p>"Monetization" just means YouTube starts paying you for your videos. Before that can happen, YouTube asks every channel to reach some minimum numbers first — a certain number of subscribers and watch time, no rule-breaking strikes, and a linked payment account. This takes time, and reaching those numbers does not guarantee YouTube will approve you — the decision is always YouTube's.</p>
+    <div class="now-box">
+      <span class="label">WHAT TO DO WHILE YOU GROW</span>
+      <ul class="now-list">
+        <li>Publish new videos on a schedule people can count on</li>
+        <li>After each upload, watch how long people keep watching (this is called retention) — it teaches you more than the view count does</li>
+        <li>Try a new thumbnail or title if a video isn't getting clicks</li>
+        <li>Once YouTube Studio shows you've reached the requirements, apply — the button will appear for you automatically</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const stages = ["Story","Characters","Visuals","Voice & Sound","Edit","Publish","Grow"];
+const stageWhy = {
+ "Story":"A clear idea and story make every later step easier — the visuals, the voice, even the title all come from this.",
+ "Characters":"If your character looks the same in every scene, your movie feels like one real story instead of random pictures.",
+ "Visuals":"This is where your story turns into pictures and video your audience can actually watch.",
+ "Voice & Sound":"Voices and sound are what make a movie feel alive instead of silent and empty.",
+ "Edit":"Editing is where all your separate pieces — video, voice, music — come together into one finished movie.",
+ "Publish":"This is how your finished movie actually gets in front of real people on YouTube.",
+ "Grow":"Once your movie is live, this is how you learn what worked and build toward earning from your channel."
+};
+const steps = [
+{s:0,t:"Choose what your movie will be about",g:"Story",word:{term:"Idea",def:"Just the one-sentence thought your whole movie is about — nothing more."},exp:"We are going to decide the main idea of your movie. You do NOT need a perfect story yet — just one interesting sentence.",ex:"A poor farmer discovers a strange machine buried under his field.",act:"Think of one movie idea, in one sentence. If you're stuck, we can create a few ideas for you.",tool:"ChatGPT or Claude (free)",prompt:"Give me 5 short movie ideas about [a topic you like], each in one sentence.",mistake:"Trying to think of a whole movie with a beginning, middle and end right now — that comes later. For now, just one sentence.",out:"One sentence describing your movie, written down somewhere you can find it again.",notSure:"Not sure what your movie should be about? Try one of these: a hidden machine, a lost family member, a fight to survive, a strange visitor from the sky. Pick whichever one you'd want to watch."},
+{s:1,t:"Choose who should enjoy watching it",g:"Story",word:{term:"Audience",def:"Audience means the type of people you want watching your movie — for example: kids, adults, people who like horror, people who like action."},exp:"Every movie is made for someone. Knowing who you're making it for helps YouTube show it to the right people, and helps you know what tone to use.",ex:"Genre: Sci-fi action. Audience: adults who enjoy action and adventure movies.",act:"Pick one genre (the type of movie — action, horror, comedy, sci-fi, romance) and describe who it's for in one line.",tool:"Any notes app on your phone",prompt:"Based on this movie idea: [your idea], suggest one genre and one audience.",mistake:"Trying to make a movie 'for everyone' — this usually means it ends up appealing to no one in particular.",out:"One genre word, and one line describing who will enjoy it.",notSure:"Not sure? Choose Action if you like excitement, Horror if you like being scared, Comedy if you like to laugh, or Sci-Fi if you like imagining the future."},
+{s:2,t:"Give your movie a title",g:"Story",word:{term:"Title",def:"The name of your movie — the words people see first and decide if they want to click."},exp:"Your title is the very first thing a stranger sees. A good title makes someone curious enough to click play.",ex:"HAMMERFALL — One Pilot. Three Titans. Total War.",act:"Write down a few possible titles, then choose the one that makes you most curious to watch it.",tool:"ChatGPT or Claude (free)",prompt:"Give me 8 short, exciting titles for this movie idea: [your idea].",mistake:"A title so plain it doesn't tell you anything about the story, like 'My Movie'.",out:"Your final movie title, written down.",notSure:"Not sure? Ask an AI writer for 8 titles (using the prompt above) and just pick your favorite — there's no wrong choice."},
+{s:3,t:"Turn your idea into a short story",g:"Story",word:{term:"Story outline",def:"A short version of your story — how it starts, what problem happens in the middle, and how it ends."},exp:"Now we stretch your one sentence into a tiny story: how it starts, what goes wrong in the middle, and how it ends.",ex:"Setup: the pilot is called back to duty. Middle: his machine fails in battle. End: he wins using an old, forgotten weapon.",act:"Write 3 to 5 sentences: how your movie starts, the problem in the middle, and how it ends.",tool:"ChatGPT or Claude (free)",prompt:"Turn this idea into a 5-sentence story with a clear start, middle and end: [your idea].",mistake:"Stopping at the middle and forgetting to decide how the story ends.",out:"A short paragraph — your whole story in a few sentences."},
+{s:4,t:"Let AI write your full script",g:"Story",word:{term:"Script",def:"The full written version of your movie — what happens in each scene and what each character says."},exp:"Now your short story becomes a real script — the exact words and actions the AI will use to build each scene.",ex:"SCENE 1 — CITY RUINS, NIGHT. The pilot kneels in the rubble, exhausted...",act:"Give your story to an AI writer and ask it to turn it into a scene-by-scene script.",tool:"ChatGPT or Claude (free)",prompt:"Write a scene-by-scene script, with scene descriptions and dialogue, based on this story: [your story]. Keep the movie under 8 minutes.",mistake:"Using the very first script draft without checking it's actually short enough to make.",out:"A full written script you can read top to bottom."},
+{s:5,t:"Split your script into scenes",g:"Story",word:{term:"Scene",def:"One single moment or location in your movie — like one photo or one short video clip. A movie is made of many scenes joined together."},exp:"We break your script into small numbered pieces called scenes. Each scene becomes one separate video clip later.",ex:"Scene 1: The pilot kneels in rubble at night, the city burning behind him.",act:"Copy each part of your script into its own numbered scene, with one short sentence describing what we SEE in that scene.",tool:"Notes app or a simple spreadsheet",prompt:"Split this script into numbered scenes, each with a one-sentence visual description: [your script].",mistake:"Making one scene try to show too many different things at once — keep each scene to one clear moment.",out:"A numbered list of scenes, each with a one-line description."},
+{s:6,t:"Create your main characters",g:"Characters",word:{term:"Character",def:"A person (or creature) in your movie — like the hero, the villain, or a side character."},exp:"Before we create any pictures, we need to decide exactly who is in your movie, so every picture of them matches.",ex:"Kade — a man in his mid-30s, a scarred jaw, wears a worn green flight suit, quiet but loyal.",act:"For each character in your script, write a few words about how they look and what they're like.",tool:"ChatGPT or Claude (free)",prompt:"Based on this script, list the main characters with a short physical description and personality for each: [your script].",mistake:"Describing a character too loosely — a vague description makes the AI draw a different-looking person every time.",out:"A short written description for each character in your movie."},
+{s:7,t:"Lock in how each character looks",g:"Characters",word:{term:"Reference image",def:"One saved picture of a character that you reuse every time, so they look the same in every scene."},exp:"We now create ONE picture of each character that we will reuse in every scene, so they don't change appearance halfway through your movie.",ex:"One saved image of Kade, used as the reference in every later scene he appears in.",act:"Create one clear picture of each character and save it somewhere you'll remember.",tool:"Midjourney or Higgsfield",prompt:"[your character description], front-facing reference image, plain background, consistent lighting, movie style.",mistake:"Creating a brand-new picture of the character for every scene instead of reusing the one you saved.",out:"One saved reference picture per character."},
+{s:8,t:"Describe each scene for the AI",g:"Visuals",word:{term:"Prompt",def:"The written instructions you give an AI tool so it knows exactly what picture or video to create."},exp:"For each scene, we write a detailed instruction (called a prompt) telling the AI exactly what to show, using your saved character picture as the guide.",ex:"Kade kneels in smoking rubble, wide low camera angle, orange firelight, slow cinematic movement.",act:"For every scene, write one prompt combining: the character, the location, what's happening, and the mood.",tool:"ChatGPT or Claude (free)",prompt:"Write a detailed AI video prompt for this scene, including the character, setting, camera angle and mood: [your scene description].",mistake:"Forgetting to describe the camera angle or lighting — this makes every scene look flat and the same.",out:"One finished prompt for every scene in your movie."},
+{s:9,t:"Turn your scenes into real video clips",g:"Visuals",exp:"This is the exciting part — we turn your written prompts into actual moving video clips.",ex:"A 5-second video clip of Kade kneeling in the rubble, saved to your computer or phone.",act:"Take each scene's prompt from the last step and run it through an AI video tool, then save the clip.",tool:"Runway or Higgsfield",prompt:"[paste the prompt you wrote for this scene in the last step]",mistake:"Keeping a clip that looks different from your character's saved picture instead of trying again.",out:"One saved video clip for every scene in your movie."},
+{s:10,t:"Create any extra pictures you need",g:"Visuals",exp:"Some shots — like wide views of a location, or a title screen — don't need a character in them. We create those separately.",ex:"A wide picture of a ruined city at sunset, used as your opening shot.",act:"Make a picture for any location, background or title card your movie needs but doesn't have yet.",tool:"Midjourney or Ideogram",prompt:"Wide view of [your location], cinematic lighting, no people, movie background image.",mistake:"Forgetting to make an opening title image and having to stop and go back for it later.",out:"A saved folder of extra background and title images."},
+{s:11,t:"Give your characters a voice",g:"Voice & Sound",word:{term:"Voiceover",def:"A recorded voice speaking your character's lines, made using an AI voice tool instead of a real actor."},exp:"Now we give each character a voice, so they can actually speak the lines in your script.",ex:"Kade's line, 'I'm not leaving this city again,' spoken aloud in a deep, rough voice.",act:"Copy each line of dialogue into an AI voice tool, one character voice at a time.",tool:"ElevenLabs (free plan)",prompt:"[paste one line of dialogue at a time into the voice tool]",mistake:"Using the exact same voice for every character, which makes it confusing who is speaking.",out:"One saved audio file for every line your characters say."},
+{s:12,t:"Add music and sound effects",g:"Voice & Sound",exp:"Music and sound make your movie feel real and emotional instead of silent and empty.",ex:"A quiet, tense music track under the rubble scene, and a loud metal CLANG sound when the machine takes its first step.",act:"Pick one background music track that matches your movie's mood, plus a few key sound effects.",tool:"YouTube Audio Library (free)",prompt:"No prompt needed — search the library for '[your genre] tense music' and '[your action] sound effect'.",mistake:"Music playing so loud it's hard to hear the characters talking.",out:"One music track and a small folder of sound effects."},
+{s:13,t:"Bring everything into your video editor",g:"Edit",word:{term:"Timeline",def:"The row in your video editor where you arrange all your clips, one after another, in the order they'll play."},exp:"Now we gather every video clip, picture, voice line and sound into one project, ready to be put together.",ex:"A new editing project with a separate folder for each of your 12 scenes.",act:"Open your video editor, start a new project, and drag in every file you've made so far.",tool:"CapCut (free)",prompt:"No prompt needed — this is done by hand inside the editing app.",mistake:"Dumping every file into one messy pile instead of keeping scenes organized — this makes editing much slower.",out:"One editing project with all your files safely inside it."},
+{s:14,t:"Put your scenes in order",g:"Edit",exp:"We now lay your video clips onto the timeline in the same order as your script, so the story plays correctly.",ex:"All 12 of your scene clips, placed one after another in the right order.",act:"Drag each video clip onto the timeline in script order, and trim off any extra unused seconds.",tool:"CapCut (free)",prompt:"No prompt needed — this is done by hand inside the editing app.",mistake:"Leaving empty gaps or repeated frames between clips.",out:"A rough version of your full movie, in the right order."},
+{s:15,t:"Line up the sound with the picture",g:"Edit",exp:"We now make sure every voice line and sound effect happens at exactly the right moment in the video.",ex:"The metal CLANG sound now happens at the exact instant the machine's foot hits the ground.",act:"Slide each voice and sound file left or right until it matches what's happening on screen.",tool:"CapCut (free)",prompt:"No prompt needed — this is done by hand inside the editing app.",mistake:"Voice and music overlapping so much that neither one is clear.",out:"A version of your movie where sound and picture match perfectly."},
+{s:16,t:"Give your whole movie one consistent look",g:"Edit",exp:"We apply one color style across your whole movie so every scene feels like part of the same film, not a mix of different clips.",ex:"A cool blue-and-orange color look applied evenly across all 12 scenes.",act:"Choose one color filter or preset and apply it to every scene the same way.",tool:"CapCut (free)",prompt:"No prompt needed — choose one preset filter and apply it to the whole timeline.",mistake:"Using a different color style on different scenes, which makes the movie feel disjointed.",out:"A movie where every scene shares the same visual look."},
+{s:17,t:"Finish and export your movie file",g:"Edit",exp:"This is the last editing step — we watch the whole thing once, trim any slow parts, and save it as a finished video file.",ex:"A finished 8-minute video file, ready to upload.",act:"Watch your full movie once, cut out anything that drags, then export/save the file in high quality.",tool:"CapCut (free)",prompt:"No prompt needed — use the 'Export' button in your editor.",mistake:"Exporting in low quality, which will look blurry on bigger screens.",out:"One finished video file saved on your device."},
+{s:18,t:"Make sure everything follows the rules",g:"Publish",word:{term:"Copyright",def:"Rules about who owns music, images or other content, and how it's allowed to be used — using someone else's without permission can get your video removed."},exp:"Before uploading, we check that your music and tools are allowed to be used this way, and that your video follows YouTube's current rules.",ex:"Checking that your background music track's license allows you to use it on a monetized YouTube video.",act:"Look at the licence terms for your music and any AI tools you used, and check YouTube's current content rules.",tool:"YouTube Help Center (free)",prompt:"No prompt needed — this is a manual check, not something AI generates for you.",mistake:"Assuming a free tool's output is automatically safe to use commercially without checking.",out:"A short checklist confirming your movie is cleared to publish."},
+{s:19,t:"Design a thumbnail people want to click",g:"Publish",word:{term:"Thumbnail",def:"The small preview picture people see before clicking your video — like a movie poster for your YouTube video."},exp:"Your thumbnail is what decides whether someone clicks your video at all. It should show the single most exciting moment.",ex:"A close-up of your main character mid-battle, with the movie title in bold orange letters.",act:"Design one bold thumbnail image with one clear focal point and text people can read on a small phone screen.",tool:"Canva (free)",prompt:"Design a movie thumbnail: [character] in [exciting moment], bold contrast, large readable text, dramatic lighting.",mistake:"Cramming too much text or too many pictures onto one thumbnail — keep it to one clear idea.",out:"One finished thumbnail image.",notSure:"Not sure what moment to use? Pick the single shot from your movie that would make YOU want to click if you saw it scrolling by."},
+{s:20,t:"Write your title, description and tags",g:"Publish",word:{term:"SEO",def:"Short for 'search engine optimization' — simply means writing your title and description with the right words so YouTube knows who to show your video to."},exp:"Your title, description and tags help YouTube understand what your movie is about, so it can recommend it to the right viewers.",ex:"Title: HAMMERFALL — Mech vs Kaiju Full Movie. Tags: sci-fi short film, mech vs kaiju, AI movie.",act:"Write a clear title, a short description with a few key words, and a list of 10 relevant tags.",tool:"ChatGPT or Claude (free)",prompt:"Write a YouTube title, description and 10 tags for this movie: [your one-sentence idea + genre].",mistake:"Writing a description with no useful key words, making it harder for YouTube to know who to show it to.",out:"Your final title, description, and list of tags."},
+{s:21,t:"Set up your YouTube channel",g:"Publish",exp:"A clear, welcoming channel page helps a new viewer decide to stick around and subscribe.",ex:"A channel banner that matches your movie's look, with one friendly sentence describing what your channel is about.",act:"Add a profile picture, a banner image, and a one-line description of your channel.",tool:"YouTube Studio (free)",prompt:"No prompt needed — this is done inside your YouTube Studio settings.",mistake:"Leaving your channel banner or description blank, which can look unfinished to new visitors.",out:"A channel page with a picture, banner and description filled in."},
+{s:22,t:"Upload your movie to YouTube",g:"Publish",exp:"Now we publish your finished movie, along with your thumbnail, title, description and tags, so people can watch it.",ex:"Your movie live on YouTube, with your thumbnail, title, description and tags already attached.",act:"Upload your video file, then attach the thumbnail, title, description and tags you already prepared.",tool:"YouTube Studio (free)",prompt:"No prompt needed — this is done inside YouTube Studio's upload screen.",mistake:"Publishing before your thumbnail or title are ready, then having to go back and fix it.",out:"Your movie, published and visible on YouTube."},
+{s:23,t:"Check how your movie is doing",g:"Grow",word:{term:"Retention",def:"How long people actually keep watching your video before they stop — a more useful number than just the view count."},exp:"Your analytics page tells you exactly where people stopped watching, which helps you improve your next movie.",ex:"Noticing viewers often stop watching around the 45-second mark, then making your next intro shorter.",act:"A day or two after uploading, open YouTube Studio and look at your click rate and how long people watched.",tool:"YouTube Studio Analytics (free)",prompt:"No prompt needed — this is a dashboard you read, not something you generate.",mistake:"Only looking at the total view count and ignoring how long people actually watched.",out:"A short list of one or two things to try differently next time."},
+{s:24,t:"Apply for YouTube monetization",g:"Grow",exp:"Once your channel meets YouTube's requirements, you can apply to start earning money from your videos.",ex:"Applying for the YouTube Partner Program once YouTube Studio shows you've reached the required numbers.",act:"Check the requirements shown in YouTube Studio, and once you meet them, apply from there.",tool:"YouTube Studio (free)",prompt:"No prompt needed — this is a manual application inside YouTube Studio.",mistake:"Expecting approval to be guaranteed or immediate — YouTube reviews every application individually.",out:"A submitted application to YouTube's Partner Program."}
+];
+
+let current = -1;
+let completed = {};
+try{ completed = JSON.parse(localStorage.getItem('mf_completed')||'{}'); }catch(e){ completed = {}; }
+let activeStage = "All";
+
+function save(){ try{ localStorage.setItem('mf_completed', JSON.stringify(completed)); }catch(e){} }
+
+function renderStageNav(){
+  const nav = document.getElementById('stageNav');
+  const all = ["All", ...stages];
+  nav.innerHTML = all.map(g => `<div class="stage-chip ${g===activeStage?'active':''}" onclick="setStage('${g}')">${g}</div>`).join('');
+}
+function setStage(g){ activeStage = g; renderStageNav(); renderList(); }
+
+function renderList(){
+  const list = document.getElementById('stepListCard');
+  const filtered = steps.filter(st => activeStage==="All" || st.g===activeStage);
+  list.innerHTML = filtered.map(st=>{
+    const isDone = !!completed[st.s];
+    const isNow = st.s===current;
+    const cls = isDone ? 'done' : (isNow ? 'now' : '');
+    const num = isDone ? '✓' : (st.s+1);
+    return `<div class="step-row" onclick="goStep(${st.s})">
+      <div class="step-num ${cls}">${num}</div>
+      <div>
+        <div class="step-title">${st.t}</div>
+        <div class="step-sub">${st.g}</div>
+      </div>
+      <div class="chev">›</div>
+    </div>`;
+  }).join('');
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = Object.keys(completed).length;
+  document.getElementById('pfill').style.width = (done/steps.length*100)+'%';
+  document.getElementById('statline').textContent = done===0 ? "You have not started yet" : `${done} of 25 steps done`;
+}
+
+function goStep(i){
+  current = i;
+  const st = steps[i];
+  const isDone = !!completed[st.s];
+  const sec = document.getElementById('detailSec');
+  sec.innerHTML = `
+    <span class="pillhead">${st.g} · Step ${i+1} of 25</span>
+    <h2>${st.t}</h2>
+    <div class="box"><span class="label">WHAT WE'RE DOING</span><p>${st.exp}</p></div>
+    <div class="box"><span class="label">WHY THIS MATTERS</span><p>${stageWhy[st.g]}</p></div>
+    ${st.word?`<div class="word-box"><span class="label">WORD EXPLAINED: ${st.word.term}</span><p>${st.word.def}</p></div>`:''}
+    <div class="box example-box"><span class="label">EXAMPLE</span><p>${st.ex||st.out}</p></div>
+    <div class="box"><span class="label">WHAT YOU'LL END UP WITH</span><p>${st.out}</p></div>
+    ${st.prompt && st.prompt.indexOf('No prompt needed')===-1 ? `<div class="box"><span class="label">READY-TO-USE PROMPT (COPY THIS)</span><div class="prompt-box">${st.prompt}</div></div>` : ''}
+    <div class="box"><span class="label">WATCH OUT FOR</span><p>${st.mistake}</p></div>
+    <div class="now-box">
+      <span class="label">WHAT TO DO NOW</span>
+      <ol class="now-list">
+        <li>${st.act}</li>
+        <li>Open <b>${st.tool}</b> and follow the instruction above</li>
+        <li>Come back here and press the button below when you're done</li>
+      </ol>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="complete(${st.s})">${isDone?"Done — mark as not finished":"Yes, I understand — mark this done"}</button>
+        ${st.notSure?`<button class="btn btn-ghost" onclick="alert('${st.notSure.replace(/'/g,"\\'")}')">Not sure? Help me decide</button>`:''}
+        ${i<steps.length-1?`<button class="btn btn-ghost" onclick="goStep(${i+1})">Next — ${steps[i+1].t}</button>`:''}
+      </div>
+    </div>`;
+  sec.classList.add('open');
+  sec.scrollIntoView({behavior:'smooth', block:'start'});
+  renderList();
+}
+
+function complete(s){
+  if(completed[s]) delete completed[s]; else completed[s] = true;
+  save();
+  goStep(current);
+}
+
+renderStageNav();
+renderList();
+
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
